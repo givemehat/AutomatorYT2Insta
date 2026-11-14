@@ -1,0 +1,41 @@
+# Core Web Framework & Server
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.8.0
+pydantic-settings>=2.4.0
+jinja2>=3.1.4
+python-multipart>=0.0.9
+
+# Database & Storage
+sqlalchemy>=2.0.30
+alembic>=1.13.2
+aiosqlite>=0.20.0
+
+# YouTube, Scraping & Media Download
+yt-dlp>=2024.8.6
+google-api-python-client>=2.140.0
+google-auth-oauthlib>=1.2.1
+google-auth-httplib2>=0.2.0
+beautifulsoup4>=4.12.3
+lxml>=5.2.0
+
+# HTTP & API Requests
+httpx>=0.27.0
+requests>=2.32.3
+
+# AI & LLM Providers
+google-genai>=0.1.1
+openai>=1.40.0
+
+# Video Processing, Face Detection & Helpers
+imageio-ffmpeg>=0.5.1
+moviepy>=2.0.0
+opencv-python-headless>=4.8.0
+
+# Scheduling & Background Automation
+apscheduler>=3.10.4
+
+# Testing & CLI Experience
+pytest>=8.3.0
+python-dotenv>=1.0.1
+rich>=13.7.1

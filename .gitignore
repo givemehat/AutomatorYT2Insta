@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+
+# Storage Cache
+storage/raw_videos/*
+storage/audio/*
+storage/clips/*
+storage/subtitles/*
+storage/temp/*
+!storage/**/.gitkeep
+
+# Secrets & Environment variables
+.env
+.env.local
+google_drive_credentials.json
+client_secret*.json
+
+# Logs
+*.log
+logs/
+
+# Pytest / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
