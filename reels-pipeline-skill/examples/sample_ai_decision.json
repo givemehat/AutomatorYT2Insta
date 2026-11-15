@@ -1,0 +1,29 @@
+{
+  "video_id": "dQw4w9WgXcQ",
+  "decision": "POST_SHORT_CLIP",
+  "confidence": 0.94,
+  "reason": "Strong provocative hook within first 5 seconds, followed by concise standalone explanation of core breakthrough.",
+  "content_type": "educational",
+  "recommended_duration": 42.0,
+  "clips": [
+    {
+      "start_seconds": 12.0,
+      "end_seconds": 54.0,
+      "hook_sentence": "Here is the single mistake 90% of engineers make when building pipelines.",
+      "summary": "Core architectural explanation of failure recovery",
+      "virality_score": 0.92
+    }
+  ],
+  "title": "The #1 Pipeline Mistake Explained 💡",
+  "caption": "💡 The #1 Pipeline Mistake Explained\n\nHere is what you need to know about high-availability pipelines:\n• The Mistake: Not handling retry backoff properly.\n• The Fix: Implement idempotent message queues.\n• The Result: Zero dropped jobs under peak load.\n\n📌 Save this Reel for later | Follow for daily engineering insights!\n\n#SoftwareEngineering #Backend #SystemDesign #DevOps #Python",
+  "hashtags": [
+    "#SoftwareEngineering",
+    "#Backend",
+    "#SystemDesign",
+    "#DevOps",
+    "#Python",
+    "#Reels"
+  ],
+  "recommended_format": "9:16",
+  "requires_review": false
+}

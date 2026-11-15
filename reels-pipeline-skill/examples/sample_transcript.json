@@ -1,0 +1,22 @@
+[
+  {
+    "start": 12.0,
+    "end": 16.5,
+    "text": "Here is the single mistake 90% of engineers make when building pipelines."
+  },
+  {
+    "start": 16.5,
+    "end": 22.0,
+    "text": "They assume network calls will always succeed and forget exponential backoff."
+  },
+  {
+    "start": 22.0,
+    "end": 35.0,
+    "text": "When downstream APIs fail, unthrottled retries cause catastrophic thundering herd crashes."
+  },
+  {
+    "start": 35.0,
+    "end": 54.0,
+    "text": "By adding idempotent state keys and jittered exponential backoff, you guarantee reliable delivery."
+  }
+]

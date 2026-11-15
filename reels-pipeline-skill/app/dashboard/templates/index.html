@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutomatorYT2Insta — AI Content Automation Engine</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    [x-cloak] { display: none !important; }
+    body { background-color: #0b0f19; color: #e2e8f0; }
+    .glass-card { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans" x-data="dashboardApp()" x-init="initData()">
+
+  <!-- Header -->
+  <header class="border-b border-gray-800 bg-gray-900/80 sticky top-0 z-50 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-red-600 via-pink-600 to-purple-600 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-pink-500/20">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold bg-gradient-to-r from-red-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
+            AutomatorYT2Insta
+          </h1>
+          <p class="text-xs text-gray-400">AI-Powered YouTube &rarr; Instagram Content System</p>
+        </div>
+      </div>
+
+      <!-- Mode & Status Badges -->
+      <div class="flex items-center space-x-4">
+        <div class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold glass-card border border-pink-500/30">
+          <span class="h-2 w-2 rounded-full" :class="metrics.config?.mode === 'FULL_AUTO' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'"></span>
+          <span class="text-gray-300">Mode: <strong class="text-white" x-text="metrics.config?.mode || 'SAFE'"></strong></span>
+        </div>
+        <div class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold glass-card border border-purple-500/30">
+          <i class="fa-solid fa-camera text-purple-400"></i>
+          <span class="text-gray-300" x-text="metrics.config?.reframe_style || 'Smart Face Track'"></span>
+        </div>
+        <button @click="triggerScan()" :disabled="scanning" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-xs font-medium text-gray-200 rounded-lg border border-gray-700 transition flex items-center space-x-1.5">
+          <i class="fa-solid fa-rotate" :class="{'fa-spin': scanning}"></i>
+          <span>Check Uploads</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- KPI Metric Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="glass-card rounded-2xl p-5 border border-red-500/20 shadow-lg">
+        <div class="flex justify-between items-center text-gray-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">YouTube Videos</span>
+          <i class="fa-brands fa-youtube text-red-500 text-lg"></i>
+        </div>
+        <div class="text-3xl font-extrabold text-white" x-text="metrics.videos?.total || 0"></div>
+        <p class="text-xs text-gray-400 mt-1"><span class="text-emerald-400" x-text="metrics.videos?.processed || 0"></span> processed</p>
+      </div>
+
+      <div class="glass-card rounded-2xl p-5 border border-purple-500/20 shadow-lg">
+        <div class="flex justify-between items-center text-gray-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">Generated Clips</span>
+          <i class="fa-solid fa-clapperboard text-purple-400 text-lg"></i>
+        </div>
+        <div class="text-3xl font-extrabold text-white" x-text="metrics.clips?.total || 0"></div>
+        <p class="text-xs text-gray-400 mt-1"><span class="text-emerald-400" x-text="metrics.clips?.qc_passed || 0"></span> QC Passed</p>
+      </div>
+
+      <div class="glass-card rounded-2xl p-5 border border-amber-500/20 shadow-lg">
+        <div class="flex justify-between items-center text-gray-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">Pending Review</span>
+          <i class="fa-solid fa-clock text-amber-400 text-lg"></i>
+        </div>
+        <div class="text-3xl font-extrabold text-white" x-text="metrics.clips?.pending_approval || 0"></div>
+        <p class="text-xs text-gray-400 mt-1">Awaiting Safe-Mode approval</p>
+      </div>
+
+      <div class="glass-card rounded-2xl p-5 border border-pink-500/20 shadow-lg">
+        <div class="flex justify-between items-center text-gray-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">Published on IG</span>
+          <i class="fa-brands fa-instagram text-pink-500 text-lg"></i>
+        </div>
+        <div class="text-3xl font-extrabold text-white" x-text="metrics.instagram?.published || 0"></div>
+        <p class="text-xs text-gray-400 mt-1">Live Instagram Reels</p>
+      </div>
+    </div>
+
+    <!-- Ingestion & Quick Action Panel -->
+    <div class="glass-card rounded-2xl p-6 border border-gray-800">
+      <h2 class="text-base font-semibold text-white mb-4 flex items-center space-x-2">
+        <i class="fa-solid fa-bolt text-yellow-400"></i>
+        <span>Ingest & Repurpose YouTube Video</span>
+      </h2>
+      <form @submit.prevent="ingestVideo()" class="flex flex-col sm:flex-row gap-3">
+        <input 
+          type="text" 
+          x-model="videoUrlInput" 
+          placeholder="Enter YouTube Video URL or ID (e.g. https://www.youtube.com/watch?v=... or shorts/embed)" 
+          class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 transition"
+          required
+        >
+        <button 
+          type="submit" 
+          :disabled="ingesting"
+          class="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white text-sm font-semibold px-6 py-2.5 rounded-xl shadow-lg shadow-pink-600/30 transition flex items-center justify-center space-x-2 disabled:opacity-50"
+        >
+          <i class="fa-solid fa-play" :class="{'fa-spin': ingesting}"></i>
+          <span>Process Video</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="border-b border-gray-800 flex space-x-6">
+      <button 
+        @click="activeTab = 'review'" 
+        class="pb-3 text-sm font-semibold transition border-b-2 flex items-center space-x-2"
+        :class="activeTab === 'review' ? 'border-pink-500 text-pink-400' : 'border-transparent text-gray-400 hover:text-gray-200'"
+      >
+        <i class="fa-solid fa-list-check"></i>
+        <span>Clips Review Queue (<span x-text="clips.filter(c => c.approval_status === 'PENDING_APPROVAL').length"></span>)</span>
+      </button>
+      <button 
+        @click="activeTab = 'videos'" 
+        class="pb-3 text-sm font-semibold transition border-b-2 flex items-center space-x-2"
+        :class="activeTab === 'videos' ? 'border-pink-500 text-pink-400' : 'border-transparent text-gray-400 hover:text-gray-200'"
+      >
+        <i class="fa-brands fa-youtube"></i>
+        <span>Ingested Videos (<span x-text="videos.length"></span>)</span>
+      </button>
+      <button 
+        @click="activeTab = 'logs'" 
+        class="pb-3 text-sm font-semibold transition border-b-2 flex items-center space-x-2"
+        :class="activeTab === 'logs' ? 'border-pink-500 text-pink-400' : 'border-transparent text-gray-400 hover:text-gray-200'"
+      >
+        <i class="fa-solid fa-terminal"></i>
+        <span>Live System Logs</span>
+      </button>
+    </div>
+
+    <!-- TAB 1: CLIPS REVIEW QUEUE -->
+    <div x-show="activeTab === 'review'" class="space-y-6" x-cloak>
+      <div x-show="clips.length === 0" class="text-center py-12 text-gray-500">
+        <i class="fa-solid fa-film text-4xl mb-3 text-gray-600"></i>
+        <p class="text-base">No clips generated yet. Ingest a video above to create Instagram Reels!</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <template x-for="clip in clips" :key="clip.id">
+          <div class="glass-card rounded-2xl overflow-hidden border border-gray-800 flex flex-col hover:border-pink-500/40 transition">
+            
+            <!-- Video Player Preview -->
+            <div class="aspect-[9/16] bg-black relative flex items-center justify-center overflow-hidden">
+              <template x-if="clip.local_clip_path">
+                <video 
+                  controls 
+                  preload="metadata"
+                  class="w-full h-full object-contain"
+                  :src="'/media/clips/' + clip.id + '.mp4'"
+                ></video>
+              </template>
+              <template x-if="!clip.local_clip_path">
+                <div class="text-center text-gray-600 p-4">
+                  <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
+                  <p class="text-xs">Rendering 9:16 Video...</p>
+                </div>
+              </template>
+
+              <!-- QC Badge -->
+              <div class="absolute top-3 right-3">
+                <span 
+                  class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md"
+                  :class="clip.qc_status === 'PASS' ? 'bg-emerald-500/80 text-white' : 'bg-red-500/80 text-white'"
+                  x-text="'QC: ' + clip.qc_status"
+                ></span>
+              </div>
+            </div>
+
+            <!-- Clip Details -->
+            <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-bold text-pink-400 uppercase tracking-wider" x-text="clip.decision_type"></span>
+                  <span class="text-xs font-semibold text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded-full" x-text="(clip.ai_confidence * 100).toFixed(0) + '% Conf'"></span>
+                </div>
+                <h3 class="text-sm font-semibold text-white line-clamp-2" x-text="clip.clip_title"></h3>
+                <p class="text-xs text-gray-400 mt-1 line-clamp-2 italic" x-text="'💡 ' + (clip.ai_reasoning || 'Identified standalone high-value hook')"></p>
+                
+                <div class="text-xs text-gray-500 mt-2 flex items-center space-x-3">
+                  <span><i class="fa-solid fa-clock mr-1"></i><span x-text="clip.duration.toFixed(1) + 's'"></span></span>
+                  <span><i class="fa-solid fa-scissors mr-1"></i><span x-text="clip.start_time.toFixed(0) + 's - ' + clip.end_time.toFixed(0) + 's'"></span></span>
+                  <span class="text-purple-400" x-text="'Virality: ' + ((clip.virality_score || 0.85) * 100).toFixed(0) + '%'"></span>
+                </div>
+
+                <!-- Editable Caption -->
+                <div class="mt-3">
+                  <label class="text-[11px] font-medium text-gray-400 block mb-1">Instagram Caption</label>
+                  <textarea 
+                    x-model="clip.caption" 
+                    rows="3" 
+                    class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-xs text-gray-200 focus:outline-none focus:border-pink-500"
+                  ></textarea>
+                </div>
+              </div>
+
+              <!-- Action Controls -->
+              <div class="pt-3 border-t border-gray-800 flex items-center justify-between gap-2">
+                <template x-if="clip.approval_status === 'PENDING_APPROVAL'">
+                  <div class="w-full flex space-x-2">
+                    <button 
+                      @click="approveClip(clip, false)"
+                      class="flex-1 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold rounded-lg border border-gray-700 transition"
+                    >
+                      Reject
+                    </button>
+                    <button 
+                      @click="approveClip(clip, true)"
+                      class="flex-1 px-3 py-2 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white text-xs font-bold rounded-lg shadow-md shadow-pink-600/30 transition flex items-center justify-center space-x-1"
+                    >
+                      <i class="fa-brands fa-instagram"></i>
+                      <span>Approve & Post</span>
+                    </button>
+                  </div>
+                </template>
+                <template x-if="clip.approval_status === 'APPROVED' || clip.approval_status === 'AUTO_APPROVED'">
+                  <div class="w-full text-center py-1.5 bg-emerald-950/40 border border-emerald-700/50 rounded-lg text-emerald-300 text-xs font-semibold flex items-center justify-center space-x-1">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>Published / Approved</span>
+                  </div>
+                </template>
+                <template x-if="clip.approval_status === 'REJECTED'">
+                  <div class="w-full text-center py-1.5 bg-red-950/40 border border-red-700/50 rounded-lg text-red-300 text-xs font-semibold">
+                    Rejected
+                  </div>
+                </template>
+              </div>
+
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- TAB 2: INGESTED VIDEOS -->
+    <div x-show="activeTab === 'videos'" class="space-y-4" x-cloak>
+      <div class="glass-card rounded-2xl overflow-hidden border border-gray-800">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-gray-300">
+            <thead class="bg-gray-900/90 text-gray-400 uppercase tracking-wider font-semibold border-b border-gray-800">
+              <tr>
+                <th class="p-4">Thumbnail</th>
+                <th class="p-4">Title</th>
+                <th class="p-4">Duration</th>
+                <th class="p-4">Status</th>
+                <th class="p-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800">
+              <template x-for="v in videos" :key="v.youtube_id">
+                <tr class="hover:bg-gray-800/40 transition">
+                  <td class="p-4 w-28">
+                    <img :src="v.thumbnail_url || 'https://placehold.co/120x70'" class="w-24 h-14 object-cover rounded-lg border border-gray-700">
+                  </td>
+                  <td class="p-4">
+                    <div class="font-semibold text-white line-clamp-1" x-text="v.title"></div>
+                    <div class="text-[11px] text-gray-500 mt-0.5" x-text="'ID: ' + v.youtube_id"></div>
+                  </td>
+                  <td class="p-4 whitespace-nowrap" x-text="(v.duration_seconds || 0) + 's'"></td>
+                  <td class="p-4">
+                    <span 
+                      class="px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider"
+                      :class="{
+                        'bg-emerald-950 text-emerald-400 border border-emerald-800': v.processing_status === 'PROCESSED',
+                        'bg-amber-950 text-amber-400 border border-amber-800': v.processing_status.includes('ING') || v.processing_status === 'DOWNLOADED',
+                        'bg-red-950 text-red-400 border border-red-800': v.processing_status === 'FAILED',
+                        'bg-gray-800 text-gray-400': v.processing_status === 'SKIPPED'
+                      }"
+                      x-text="v.processing_status"
+                    ></span>
+                  </td>
+                  <td class="p-4 whitespace-nowrap">
+                    <button 
+                      @click="reprocessVideo(v.youtube_id)"
+                      class="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded border border-gray-700 text-xs"
+                    >
+                      Reprocess
+                    </button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: SYSTEM LOGS -->
+    <div x-show="activeTab === 'logs'" class="space-y-4" x-cloak>
+      <div class="glass-card rounded-2xl p-4 font-mono text-xs text-gray-300 space-y-2 max-h-[600px] overflow-y-auto border border-gray-800">
+        <template x-for="log in logs" :key="log.id">
+          <div class="flex items-start space-x-2 border-b border-gray-900/60 pb-1.5">
+            <span class="text-gray-500 whitespace-nowrap" x-text="log.created_at ? log.created_at.split('T')[1].slice(0,8) : ''"></span>
+            <span 
+              class="font-bold uppercase text-[10px] px-1.5 py-0.5 rounded"
+              :class="{
+                'bg-blue-900/60 text-blue-300': log.level === 'INFO',
+                'bg-amber-900/60 text-amber-300': log.level === 'WARNING',
+                'bg-red-900/60 text-red-300': log.level === 'ERROR'
+              }"
+              x-text="log.level"
+            ></span>
+            <span class="text-pink-400 font-semibold uppercase" x-text="'[' + log.source + ']'"></span>
+            <span class="text-gray-200" x-text="log.message"></span>
+          </div>
+        </template>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-gray-800 py-6 text-center text-xs text-gray-500">
+    AutomatorYT2Insta &copy; 2026. Production-Ready YouTube to Instagram Repurposing Engine.
+  </footer>
+
+  <script>
+    function dashboardApp() {
+      return {
+        activeTab: 'review',
+        metrics: {},
+        clips: [],
+        videos: [],
+        logs: [],
+        videoUrlInput: '',
+        ingesting: false,
+        scanning: false,
+
+        async initData() {
+          await this.refreshAll();
+          setInterval(() => this.refreshAll(), 5000);
+        },
+
+        async refreshAll() {
+          try {
+            const [mRes, cRes, vRes, lRes] = await Promise.all([
+              fetch('/api/system/metrics').then(r => r.json()),
+              fetch('/api/clips').then(r => r.json()),
+              fetch('/api/videos').then(r => r.json()),
+              fetch('/api/system/logs?limit=40').then(r => r.json())
+            ]);
+            this.metrics = mRes;
+            this.clips = cRes;
+            this.videos = vRes;
+            this.logs = lRes;
+          } catch (e) {
+            console.error('Data refresh error:', e);
+          }
+        },
+
+        async ingestVideo() {
+          if (!this.videoUrlInput) return;
+          this.ingesting = true;
+          try {
+            const res = await fetch('/api/videos/ingest', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({video_url_or_id: this.videoUrlInput, force_reprocess: true})
+            });
+            const data = await res.json();
+            this.videoUrlInput = '';
+            await this.refreshAll();
+          } catch (e) {
+            alert('Failed to start ingestion: ' + e);
+          } finally {
+            this.ingesting = false;
+          }
+        },
+
+        async reprocessVideo(vId) {
+          try {
+            await fetch('/api/videos/ingest', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({video_url_or_id: vId, force_reprocess: true})
+            });
+            await this.refreshAll();
+          } catch (e) {
+            alert('Error re-triggering processing: ' + e);
+          }
+        },
+
+        async approveClip(clip, isApproved) {
+          try {
+            const res = await fetch(`/api/clips/${clip.id}/approve`, {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({
+                approved: isApproved,
+                custom_caption: clip.caption,
+                custom_hashtags: clip.hashtags
+              })
+            });
+            await this.refreshAll();
+          } catch (e) {
+            alert('Approval action failed: ' + e);
+          }
+        },
+
+        async triggerScan() {
+          this.scanning = true;
+          try {
+            await fetch('/api/system/trigger-scan', {method: 'POST'});
+            await this.refreshAll();
+          } catch (e) {
+            console.error(e);
+          } finally {
+            setTimeout(() => { this.scanning = false; }, 2000);
+          }
+        }
+      };
+    }
+  </script>
+</body>
+</html>

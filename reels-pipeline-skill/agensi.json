@@ -1,0 +1,28 @@
+{
+  "name": "reels-pipeline-automation",
+  "displayName": "YouTube → Instagram Reels AI Automation Engine",
+  "version": "1.0.0",
+  "description": "Autonomous AI-powered pipeline to repurpose YouTube videos into high-retention 9:16 Instagram Reels with smart face-tracking, karaoke subtitles, quality control, and Meta Graph API publishing.",
+  "author": "givemehat",
+  "license": "MIT",
+  "homepage": "https://github.com/givemehat/AutomatorYT2Insta",
+  "repository": "https://github.com/givemehat/AutomatorYT2Insta",
+  "pricing": {
+    "type": "free",
+    "suggestedPriceUSD": 0
+  },
+  "tags": [
+    "youtube",
+    "instagram",
+    "reels",
+    "video-processing",
+    "ai-automation",
+    "opencv",
+    "ffmpeg",
+    "fastapi"
+  ],
+  "entrypoint": "scripts/run_pipeline.py",
+  "serverEntrypoint": "app.main:app",
+  "dashboardURL": "http://localhost:8000",
+  "minPythonVersion": "3.10"
+}
